@@ -42,4 +42,31 @@ This project is a complete login/register backend system developed using Java Sp
 
 ---
 
+# 🌐 API Endpoints
+
+## RegisterController
+
+* `POST -> http://localhost:6767/api/v1/register`
+  {
+      "username": "username",
+      "password": "password",
+      "firstName": "firstname",
+      "lastName": "lastname",
+      "email": "email",
+      "phone": "phone"
+  }
+  Users submits this request body to perform the registration process.
+
+* ## LoginController
+
+* URL: `http://localhost:6767/api/v1/auth/login`
+  Users can log in with their username and password on this page.
+
+## RefreshTokenController
+
+* `POST -> http://localhost:6767/api/v1/auth/refresh-token`
+  {
+      "refreshToken": "refreshToken"
+  }
+  Users submit this request body to obtain a new JWT tokens using the refresh token.
 
