@@ -1,6 +1,7 @@
 package com.doganmehmet.app.config;
 
 import com.doganmehmet.app.jwt.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -33,6 +39,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception
     {
         return http.csrf().disable()
+                .cors(c ->c.configurationSource(corsSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(LOGIN, REGISTER, REFRESH_TOKEN).permitAll()
                         .anyRequest().authenticated())
@@ -40,6 +47,9 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(m_jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage())))
                 .build();
     }
 
@@ -62,5 +72,17 @@ public class SecurityConfig {
     public PasswordEncoder getPasswordEncoder()
     {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    CorsConfigurationSource corsSource() {
+        var conf = new CorsConfiguration();
+        conf.setAllowedOrigins(List.of("http://localhost:5173"));
+        conf.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        conf.setAllowedHeaders(List.of("*"));
+        conf.setAllowCredentials(true);
+        var src = new UrlBasedCorsConfigurationSource();
+        src.registerCorsConfiguration("/**", conf);
+        return src;
     }
 }
