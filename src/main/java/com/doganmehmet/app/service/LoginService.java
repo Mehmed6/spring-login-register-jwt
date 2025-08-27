@@ -11,7 +11,9 @@ import com.doganmehmet.app.repository.IRefreshTokenRepository;
 import com.doganmehmet.app.repository.IUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -58,14 +60,14 @@ public class LoginService {
     public LoginDTO login(LoginRequest request)
     {
         var user = m_userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         try {
             var authToken = new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
             m_authenticationManager.authenticate(authToken);
         }
         catch (Exception e) {
-            throw new RuntimeException("Invalid password");
+            throw new BadCredentialsException("Invalid password");
         }
 
         return generateTokens(user);
